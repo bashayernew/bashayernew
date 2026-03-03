@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Flatpickr Calendar Plugin -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Appointment | Darkoum</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #d4af37;
+    }
+    body {
+      margin: 0;
+      font-family: 'Open Sans', sans-serif;
+      color: #f8e9c0;
+      background: url('images/team-background.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .page-heading {
+      text-align: center;
+      padding: 60px 20px 30px;
+      font-family: 'Playfair Display', serif;
+    }
+    .page-heading h1 {
+      font-size: 3.5rem;
+      color: var(--gold);
+      text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    }
+    /* Booking panel */
+    .booking-panel { max-width: 600px; margin: auto; }
+    .booking-card {
+      background: #111; padding: 30px; border-radius: 20px;
+      text-align: center; box-shadow: 0 0 15px rgba(212,175,55,0.2);
+    }
+    .booking-card h2 {
+      color: var(--gold); font-family: 'Playfair Display', serif;
+      margin-bottom: 20px;
+    }
+    .booking-card input,
+    .booking-card select {
+      width: 100%; padding: 12px; margin: 10px 0;
+      background: #222; color: #fff;
+      border: 1px solid var(--gold); border-radius: 10px;
+    }
+    .datetime-row { display: flex; flex-direction: column; gap: 10px; }
+    #quickCalendar { 
+      background: #222; border-radius: 16px;
+      box-shadow: 0 0 20px rgba(212,175,55,0.2);
+    }
+    .book-now-button {
+      display: inline-block; padding: 12px 25px;
+      background: var(--gold); color: #000; border: none;
+      border-radius: 30px; font-weight: bold; cursor: pointer;
+    }
+    .book-now-button.secondary {
+      background: transparent; border: 2px solid var(--gold);
+      color: var(--gold);
+    }
+    .book-now-button.secondary:hover {
+      background: var(--gold); color: #000;
+    }
+
+    /* Profile overlay */
+    .profile-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95); display: none;
+      justify-content: center; align-items: center;
+      padding: 30px; z-index: 9999;
+    }
+    .profile-content {
+      display: flex; gap: 30px; max-width: 800px;
+      background: #111; padding: 30px; border-radius: 20px;
+      box-shadow: 0 0 20px rgba(212,175,55,0.5);
+    }
+    .profile-info { width: 40%; text-align: center; }
+    .profile-info img {
+      width: 120px; border-radius: 50%;
+      border: 3px solid var(--gold); margin-bottom: 15px;
+    }
+    .profile-info h2,
+    .profile-info p { margin: 10px 0; }
+    .profile-booking { width: 60%; }
+    #profileCalendar {
+      background: #222; border-radius: 16px;
+      box-shadow: 0 0 20px rgba(212,175,55,0.2);
+    }
+    .close-btn {
+      position: absolute; top: 15px; right: 20px;
+      font-size: 2rem; cursor: pointer; color: var(--gold);
+    }
+    /* Flatpickr overrides */
+    .flatpickr-calendar.inline {
+      position: static !important;
+      display: block !important;
+      margin: 0 auto 10px;
+    }
+    .flatpickr-day.disabled,
+    .flatpickr-day.disabled:hover {
+      color: #666;
+      background: #333;
+      cursor: not-allowed;
+    }
+    /* Disabled select options */
+    select option:disabled { color: #666; }
+  </style>
+</head>
+<body>
+  <section class="booking-panel">
+    <div class="booking-card">
+      <h2>Quick Booking</h2>
+      <form id="quickBookingForm">
+        <input type="text" placeholder="Your Name" required />
+        <input type="tel" placeholder="Phone Number" required />
+        <div class="datetime-row">
+          <div id="quickCalendar"></div>
+          <input type="hidden" id="quickDate" name="date" required />
+          <select id="quickTime" required>
+            <option value="">Select Time</option>
+            <option>09:00 AM</option>
+            <option>10:00 AM</option>
+            <option>11:00 AM</option>
+            <option>12:00 PM</option>
+            <option>04:00 PM</option>
+            <option>05:00 PM</option>
+          </select>
+        </div>
+        <div class="button-group">
+          <button type="submit" class="book-now-button">Book Appointment</button>
+          <button type="button" class="book-now-button secondary">Book Site Visit</button>
+        </div>
+        <div id="quickBookingMsg" class="confirmation" style="display: none;">
+          ✅ Appointment confirmed!
+        </div>
+      </form>
+    </div>
+  </section>
+  <!-- FULLSCREEN PROFILE PANEL -->
+  <div id="profileOverlay" class="profile-overlay">
+    <div class="profile-content">
+      <div class="profile-info">
+        <span class="close-btn" onclick="closeProfile()">×</span>
+        <img id="profileImage" src="" alt="Team Member">
+        <h2 id="profileName"></h2>
+        <p id="profileRole"></p>
+        <p id="profileBio"></p>
+      </div>
+      <div class="profile-booking">
+        <form class="profile-form">
+          <div class="datetime-row">
+            <div id="profileCalendar"></div>
+            <input type="hidden" id="profileDateHidden" name="date" required />
+            <select id="profileTime" required>
+              <option value="">Select Time</option>
+              <option>09:00 AM</option>
+              <option>10:00 AM</option>
+              <option>11:00 AM</option>
+              <option>12:00 PM</option>
+              <option>04:00 PM</option>
+              <option>05:00 PM</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <button type="submit" class="book-now-button">Book Appointment</button>
+            <button type="button" class="book-now-button secondary">Book Site Visit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    const fullyBookedDates = ["2025-07-22", "2025-07-25"];
+    const bookedSlots = {
+      "2025-07-22": ["09:00 AM", "10:00 AM"],
+      "2025-07-23": ["11:00 AM"],
+      "2025-07-25": ["04:00 PM"]
+    };
+
+    function updateTimeOptions(date, selectId) {
+      const select = document.getElementById(selectId);
+      const booked = bookedSlots[date] || [];
+      for (const opt of select.options) {
+        if (opt.value === "") continue;
+        if (booked.includes(opt.text)) {
+          opt.disabled = true;
+        } else {
+          opt.disabled = false;
+        }
+      }
+    }
+
+    flatpickr("#quickCalendar", {
+      inline: true,
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      disable: fullyBookedDates,
+      onChange: (selectedDates, dateStr) => {
+        document.getElementById("quickDate").value = dateStr;
+        updateTimeOptions(dateStr, "quickTime");
+      }
+    });
+
+    flatpickr("#profileCalendar", {
+      inline: true,
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      disable: fullyBookedDates,
+      onChange: (selectedDates, dateStr) => {
+        document.getElementById("profileDateHidden").value = dateStr;
+        updateTimeOptions(dateStr, "profileTime");
+      }
+    });
+
+    document.getElementById("quickBookingForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      document.getElementById("quickBookingMsg").style.display = "block";
+      this.reset();
+    });
+
+    const profileData = {
+      Ali: {
+        name: "Ali Hassan",
+        role: "Project Manager",
+        img: "images/team1.jpg",
+        bio: "Oversees full project execution ensuring timely, on-budget results."
+      },
+      Lina: {
+        name: "Lina Salem",
+        role: "Interior Architect",
+        img: "images/team2.jpg",
+        bio: "Designs luxurious, minimalist, and traditional interiors."
+      },
+      Omar: {
+        name: "Omar Qassem",
+        role: "Landscape Designer",
+        img: "images/team3.jpg",
+        bio: "Creates elegant outdoor environments that blend with architecture."
+      }
+    };
+
+    function openProfile(member) {
+      const data = profileData[member];
+      document.getElementById("profileName").innerText = data.name;
+      document.getElementById("profileRole").innerText = data.role;
+      document.getElementById("profileImage").src = data.img;
+      document.getElementById("profileBio").innerText = data.bio;
+      document.getElementById("profileOverlay").style.display = "flex";
+    }
+
+    function closeProfile() {
+      document.getElementById("profileOverlay").style.display = "none";
+    }
+  </script>
+</body>
+</html>

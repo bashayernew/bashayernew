@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.booking-panel {
+  margin-top: 40px;
+}
+
+button {
+  cursor: pointer;
+}
